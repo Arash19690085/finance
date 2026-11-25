@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مدیریت مالی من</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f8b8d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="مالی من">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#18222f;--mut:#6b7686;--pri:#0f8b8d;--inc:#1b873f;--exp:#d24545;--line:#e3e8ef;--chip:#eaf0f6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#18212b;--tx:#e8edf3;--mut:#93a0b0;--line:#27323f;--chip:#223040;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#18212b;--tx:#e8edf3;--mut:#93a0b0;--line:#27323f;--chip:#223040;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,Arial,sans-serif;font-size:15px;padding-bottom:84px}
+main{max-width:560px;margin:0 auto;padding:14px}
+h1{font-size:19px;margin:6px 0 2px}.sub{color:var(--mut);font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.seg{display:flex;background:var(--chip);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;border:0;background:none;color:var(--mut);padding:10px;border-radius:9px;font:inherit;font-weight:600}
+.seg button.on{background:var(--card);color:var(--tx);box-shadow:0 1px 4px #0002}
+.seg button.on.e{color:var(--exp)}.seg button.on.i{color:var(--inc)}
+.amt{width:100%;font:800 34px Vazirmatn,Tahoma;border:0;background:none;color:var(--tx);text-align:center;padding:8px;outline:none}
+.usd{text-align:center;color:var(--mut);font-size:13px;min-height:20px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border:1px solid var(--line);background:var(--chip);color:var(--tx);padding:9px 14px;border-radius:99px;font:inherit}
+.chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+input,select{font:inherit;color:var(--tx);background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:11px;width:100%}
+.row{display:flex;gap:8px}.row>*{flex:1}
+label{display:block;color:var(--mut);font-size:12px;margin:10px 2px 4px}
+.btn{width:100%;border:0;background:var(--pri);color:#fff;font:800 17px Vazirmatn,Tahoma;padding:15px;border-radius:14px;margin-top:14px}
+.btn.s{background:var(--chip);color:var(--tx);font-size:14px;font-weight:600;padding:11px}
+nav{position:fixed;bottom:0;inset-inline:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:10px 2px;font:inherit;font-size:11px}
+nav button b{display:block;font-size:20px}nav button.on{color:var(--pri);font-weight:800}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.k{background:var(--chip);border-radius:14px;padding:12px}.k small{color:var(--mut);font-size:12px}.k div{font-weight:800;font-size:17px;margin-top:2px}
+.pos{color:var(--inc)}.neg{color:var(--exp)}
+.bar{height:9px;background:var(--chip);border-radius:9px;overflow:hidden;margin:4px 0 10px}.bar i{display:block;height:100%;background:var(--pri);border-radius:9px}
+.bar i.over{background:var(--exp)}
+.line{display:flex;justify-content:space-between;font-size:13px}
+.mon{display:flex;justify-content:space-between;align-items:center}.mon button{border:0;background:var(--chip);color:var(--tx);width:38px;height:38px;border-radius:12px;font-size:18px}
+.tx{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.tx:last-child{border:0}
+.tx .m{flex:1}.tx .m small{color:var(--mut);display:block;font-size:12px}.tx .del{border:0;background:none;color:var(--mut);font-size:16px}
+.day{color:var(--mut);font-size:12px;margin:14px 2px 0}
+.hid{display:none}.toast{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));inset-inline:0;margin:auto;width:max-content;background:#18222f;color:#fff;padding:10px 18px;border-radius:99px;z-index:9}
+svg text{fill:var(--mut);font-size:10px;font-family:inherit}
+.seg button{font-size:13px;padding:10px 2px}
+details.card summary::-webkit-details-marker{display:none}
+.ov{position:fixed;inset:0;background:#0008;z-index:20;display:flex;align-items:flex-end}.sheet{background:var(--card);width:100%;max-width:560px;margin:auto;border-radius:20px 20px 0 0;padding:16px;max-height:90vh;overflow:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.tx{cursor:pointer}
+.chip.sc{border-color:var(--pri);color:var(--pri);font-weight:600}
+input,select{font-size:16px}
+body{overscroll-behavior-y:contain}
+</style>
+</head>
+<body>
+<main>
+ <div class="mon"><div style="display:flex;gap:10px;align-items:center"><svg width="40" height="40" viewBox="0 0 1024 1024" aria-hidden="true"><defs><linearGradient id="lbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#16345f"/><stop offset="1" stop-color="#081a33"/></linearGradient><linearGradient id="lar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#19c3b3" stop-opacity=".55"/><stop offset="1" stop-color="#19c3b3" stop-opacity="0"/></linearGradient><linearGradient id="lln" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#7cf5c9"/></linearGradient></defs><rect width="1024" height="1024" rx="225" fill="url(#lbg)"/><path d="M150 330H874M150 520H874M150 710H874" stroke="#fff" stroke-opacity=".08" stroke-width="6"/><path d="M170 800V740L380 580L530 650L720 430L850 310V800Z" fill="url(#lar)"/><polyline points="170,740 380,580 530,650 720,430 850,310" fill="none" stroke="url(#lln)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/><polygon points="905,260 891,354 809,266" fill="#7cf5c9" stroke="#7cf5c9" stroke-width="30" stroke-linejoin="round"/><g fill="#fff"><circle cx="380" cy="580" r="26"/><circle cx="530" cy="650" r="26"/><circle cx="720" cy="430" r="26"/></g></svg><div><h1>مدیریت مالی من</h1><div class="sub" id="today"></div></div></div><div style="text-align:left"><div class="sub" id="sync"></div><div class="sub" id="rinfo"></div></div></div>
+ <section id="v-add">
+  <div class="card">
+   <div class="seg" id="typeSeg"><button data-t="e" class="on e">هزینه</button><button data-t="i">درآمد</button><button data-t="t">انتقال</button><button data-t="l">دادم</button><button data-t="b">گرفتم</button></div>
+   <div class="sub" id="qLbl"></div><div class="chips" id="quick"></div><input id="amt" class="amt" inputmode="numeric" placeholder="۰" autocomplete="off">
+   <div class="usd" id="usd"></div>
+   <label>نرخ دلار این تراکنش (تومان)</label><input id="rt" inputmode="numeric">
+   <div id="catBox"><div class="chips" id="cats"></div></div>
+   <div id="pBox" class="hid"><label>نام شخص</label><input id="pn" list="pl" placeholder="مثلاً: رضا"><datalist id="pl"></datalist></div>
+   <div class="row"><div><label id="accLbl">از حساب</label><select id="acc"></select></div><div id="toBox" class="hid"><label>به حساب</label><select id="to"></select></div></div>
+   <label>توضیح (اختیاری)</label><input id="note" placeholder="مثلاً: ناهار">
+   <label>احساس من (اختیاری)</label><input id="fl" placeholder="هر چه در دلتان است؛ مثلاً: خوشحال، پشیمان، مجبور بودم">
+   <div id="tagBox"><label>نوع هزینه (اختیاری)</label><div class="chips" id="tags"></div></div>
+   <label>تاریخ</label><div class="row"><input type="date" id="date"><div class="sub" id="dateFa" style="align-self:center;text-align:center"></div></div>
+   <button class="btn" id="save">ثبت</button>
+  </div>
+ </section>
+ <section id="v-dash" class="hid"></section>
+ <section id="v-list" class="hid"></section>
+ <section id="v-deb" class="hid"></section>
+ <section id="v-fc" class="hid"></section>
+ <section id="v-set" class="hid"></section>
+</main>
+<nav id="nav"><button data-v="add" class="on"><b>＋</b>ثبت</button><button data-v="dash"><b>◔</b>داشبورد</button><button data-v="list"><b>≡</b>تراکنش‌ها</button><button data-v="deb"><b>⇄</b>طلب‌ها</button><button data-v="fc"><b>🎯</b>پیش‌بینی</button><button data-v="set"><b>⚙</b>تنظیمات</button></nav>
+<script>
+const MN=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const def=()=>({rate:100000,accounts:[{n:"حساب بانکی",open:0},{n:"نقد",open:0}],
+ cats:{e:["غذا","حمل‌ونقل","مسکن و قبوض","سلامت","آموزش","تفریح","خرید","اشتراک","سایر"],i:["حقوق","پروژه","فریلنس","سود","هدیه","سایر"]},
+ budgets:{},tx:[],limit:0,last:{},fc:[],autoN:6,lastBackup:0,quick:[],sec:{},accent:"",start:"add",autoSug:true,fixed:[],tags:["ضروری","غیرضروری","احساسی","خرید بزرگ"]});
+let F={q:"",t:"",acc:"",all:false},lsub="list",S=def(),T="e",cat="",tag="",view="add",ym=null,store=null,uid=null;
+const $=s=>document.querySelector(s);
+const fa=n=>Math.round(n).toLocaleString("fa-IR");
+const norm=s=>String(s).replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g,"");
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const pf=new Intl.DateTimeFormat("en-u-ca-persian-nu-latn",{year:"numeric",month:"numeric",day:"numeric"});
+function pp(s){const o={};pf.formatToParts(new Date(s+"T12:00:00")).forEach(p=>{if(p.type!="literal"&&p.type!="era")o[p.type]=parseInt(p.value)});return o}
+const pstr=s=>{const p=pp(s);return fa(p.day)+" "+MN[p.month-1]+" "+fa(p.year).replace(/٬/g,"")};
+const key=s=>{const p=pp(s);return p.year*100+p.month};
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),1800)}
+// ---- storage (this device only, localStorage)
+const SEED={"rate":292000,"accounts":[{"n":"جت کارت","open":26900000},{"n":"بلو","open":400000},{"n":"ملی","open":14000},{"n":"ملت","open":123000}],"cats":{"e":["غذا","حمل‌ونقل","مسکن و قبوض","سلامت","آموزش","تفریح","خرید","اشتراک","سایر"],"i":["حقوق","پروژه","فریلنس","سود","هدیه","سایر"]},"budgets":{},"tx":[{"id":1764000000000,"d":"2026-10-29","t":"l","a":3500000,"c":"","p":"دا","acc":"جت کارت","to":"","n":"","f":"","g":"","r":273000},{"id":1764000000001,"d":"2026-11-01","t":"e","a":3000000,"c":"آموزش","p":"","acc":"جت کارت","to":"","n":"کلاس طاهری","f":"","g":"","r":273000},{"id":1764000000002,"d":"2026-11-01","t":"e","a":89000,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"اسنپ از بیمارستان به خونه","f":"","g":"ضروری","r":273000},{"id":1764000000003,"d":"2026-11-01","t":"e","a":260000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"لواشک و شیر نارگیل","f":"","g":"غیرضروری","r":273000},{"id":1764000000004,"d":"2026-11-01","t":"e","a":4000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"پارکینگ","f":"","g":"ضروری","r":273000},{"id":1764000000005,"d":"2026-11-01","t":"t","a":400000,"c":"","p":"","acc":"جت کارت","to":"بلو","n":"روزمره","f":"","g":"","r":273000},{"id":1764000000006,"d":"2026-11-01","t":"e","a":474300,"c":"غذا","p":"","acc":"بلو","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":273000},{"id":1764000000007,"d":"2026-11-01","t":"e","a":123300,"c":"حمل‌ونقل","p":"","acc":"بلو","to":"","n":"بنزین","f":"","g":"ضروری","r":273000},{"id":1764000000008,"d":"2026-11-02","t":"e","a":22000,"c":"سایر","p":"","acc":"بلو","to":"","n":"شارژ fa","f":"","g":"احساسی","r":273000},{"id":1764000000009,"d":"2026-11-02","t":"e","a":240000,"c":"سایر","p":"","acc":"جت کارت","to":"","n":"قلیون و چایی نبات","f":"","g":"غیرضروری","r":273100},{"id":1764000000010,"d":"2026-11-02","t":"e","a":120000,"c":"غذا","p":"","acc":"بلو","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":273100},{"id":1764000000011,"d":"2026-11-03","t":"e","a":22000,"c":"سایر","p":"","acc":"بلو","to":"","n":"شارژ برای fa","f":"","g":"غیرضروری","r":273100},{"id":1764000000012,"d":"2026-11-03","t":"e","a":74800,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"سبزی کوکو","f":"","g":"ضروری","r":274000},{"id":1764000000013,"d":"2026-11-03","t":"i","a":3254472,"c":"حقوق","p":"","acc":"ملی","to":"","n":"ایستگاه یاسمن","f":"","g":"","r":275000},{"id":1764000000014,"d":"2026-11-03","t":"e","a":1601450,"c":"سایر","p":"","acc":"ملی","to":"","n":"واریز به صرافی","f":"","g":"احساسی","r":275000},{"id":1764000000015,"d":"2026-11-03","t":"t","a":1667000,"c":"","p":"","acc":"ملی","to":"جت کارت","n":"","f":"","g":"","r":275000},{"id":1764000000016,"d":"2026-11-03","t":"e","a":21700,"c":"خرید","p":"","acc":"بلو","to":"","n":"اینترنت برای ایرانسل خودم","f":"","g":"ضروری","r":275000},{"id":1764000000017,"d":"2026-11-04","t":"e","a":20000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"آب","f":"","g":"ضروری","r":270100},{"id":1764000000018,"d":"2026-11-04","t":"e","a":323250,"c":"سایر","p":"","acc":"جت کارت","to":"","n":"خوراکی برای fa","f":"خیلی خیلی زورم اومد","g":"غیرضروری","r":275000},{"id":1764000000019,"d":"2026-11-04","t":"e","a":22000,"c":"سایر","p":"","acc":"جت کارت","to":"","n":"شارژ برای fa","f":"بازم زورم اومد","g":"غیرضروری","r":275000},{"id":1764000000020,"d":"2026-11-05","t":"e","a":70000,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"اسنپ از خ به ب","f":"","g":"ضروری","r":272000},{"id":1764000000021,"d":"2026-11-05","t":"i","a":500000,"c":"هدیه","p":"","acc":"ملی","to":"","n":"میترا زد برام","f":"","g":"","r":267200},{"id":1764000000022,"d":"2026-11-05","t":"e","a":50000,"c":"حمل‌ونقل","p":"","acc":"ملی","to":"","n":"اسنپ از ب به خ","f":"","g":"غیرضروری","r":268000},{"id":1764000000023,"d":"2026-11-05","t":"e","a":4000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"پارکینگ","f":"","g":"ضروری","r":268000},{"id":1764000000024,"d":"2026-11-05","t":"e","a":325000,"c":"خرید","p":"","acc":"ملی","to":"","n":"نخل ، کادو تولد سرور","f":"","g":"احساسی","r":270000},{"id":1764000000025,"d":"2026-11-05","t":"e","a":125000,"c":"غذا","p":"","acc":"ملی","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":270000},{"id":1764000000026,"d":"2026-11-05","t":"e","a":790000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"شام با سرور","f":"","g":"غیرضروری","r":270000},{"id":1764000000027,"d":"2026-11-06","t":"e","a":345500,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"","g":"احساسی","r":270000},{"id":1764000000028,"d":"2026-11-07","t":"t","a":185000,"c":"","p":"","acc":"جت کارت","to":"بلو","n":"","f":"","g":"","r":270000},{"id":1764000000029,"d":"2026-11-07","t":"i","a":25000,"c":"سایر","p":"","acc":"بلو","to":"","n":"لاشخوری vpn منظمی","f":"","g":"","r":270000},{"id":1764000000030,"d":"2026-11-07","t":"e","a":10000,"c":"سایر","p":"","acc":"بلو","to":"","n":"اشتباه محاسباتی","f":"","g":"","r":270000},{"id":1764000000031,"d":"2026-11-07","t":"e","a":16000,"c":"حمل‌ونقل","p":"","acc":"بلو","to":"","n":"اتوبوس","f":"","g":"غیرضروری","r":270000},{"id":1764000000032,"d":"2026-11-07","t":"t","a":400000,"c":"","p":"","acc":"جت کارت","to":"بلو","n":"اینترنت خونه","f":"","g":"","r":270000},{"id":1764000000033,"d":"2026-11-07","t":"e","a":552000,"c":"اشتراک","p":"","acc":"بلو","to":"","n":"اینترنت خونه","f":"","g":"ضروری","r":270000},{"id":1764000000034,"d":"2026-11-07","t":"e","a":130000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":270000},{"id":1764000000035,"d":"2026-11-07","t":"e","a":4000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"پارکینگ دانشگاه","f":"","g":"ضروری","r":270000},{"id":1764000000036,"d":"2026-11-07","t":"e","a":185000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":270000},{"id":1764000000037,"d":"2026-11-07","t":"e","a":22000,"c":"سایر","p":"","acc":"بلو","to":"","n":"شارژ fa","f":"","g":"غیرضروری","r":270000},{"id":1764000000038,"d":"2026-11-08","t":"e","a":4000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"پارکینگ دانشگاه","f":"","g":"ضروری","r":270000},{"id":1764000000039,"d":"2026-11-08","t":"e","a":5000,"c":"اشتراک","p":"","acc":"بلو","to":"","n":"اینترنت خونه","f":"","g":"ضروری","r":270000},{"id":1764000000040,"d":"2026-11-08","t":"e","a":335000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":270000},{"id":1764000000041,"d":"2026-11-08","t":"e","a":23535,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"بنزین","f":"","g":"ضروری","r":270000},{"id":1764000000042,"d":"2026-11-09","t":"e","a":20000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"آب","f":"","g":"ضروری","r":270000},{"id":1764000000043,"d":"2026-11-09","t":"i","a":1000000,"c":"هدیه","p":"","acc":"ملی","to":"","n":"میترا داد والا نمیدونم چرا","f":"","g":"","r":270000},{"id":1764000000044,"d":"2026-11-09","t":"t","a":1000000,"c":"","p":"","acc":"ملی","to":"بلو","n":"","f":"","g":"","r":270000},{"id":1764000000045,"d":"2026-11-09","t":"e","a":150200,"c":"غذا","p":"","acc":"بلو","to":"","n":"خوراکی","f":"","g":"ضروری","r":270000},{"id":1764000000046,"d":"2026-11-10","t":"e","a":88400,"c":"حمل‌ونقل","p":"","acc":"بلو","to":"","n":"اسنپ","f":"","g":"ضروری","r":270000},{"id":1764000000047,"d":"2026-11-10","t":"e","a":50000,"c":"اشتراک","p":"","acc":"بلو","to":"","n":"شارژ خودم","f":"","g":"ضروری","r":270000},{"id":1764000000048,"d":"2026-11-10","t":"e","a":395000,"c":"غذا","p":"","acc":"بلو","to":"","n":"خوراکی","f":"از روی حرص بود ، نه از روی اینکه دلم بخواد","g":"غیرضروری","r":270000},{"id":1764000000049,"d":"2026-11-10","t":"e","a":66000,"c":"حمل‌ونقل","p":"","acc":"بلو","to":"","n":"اتوبوس","f":"","g":"","r":270000},{"id":1764000000050,"d":"2026-11-11","t":"e","a":5000,"c":"سایر","p":"","acc":"بلو","to":"","n":"شارژ","f":"","g":"احساسی","r":270000},{"id":1764000000051,"d":"2026-11-11","t":"e","a":771000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"مرغ سوخاری","f":"","g":"احساسی","r":260000},{"id":1764000000052,"d":"2026-11-12","t":"e","a":4000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"پارکینگ دانشگاه","f":"","g":"ضروری","r":260000},{"id":1764000000053,"d":"2026-11-12","t":"e","a":280000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"قهوه","f":"دلم میخواست و گرفتم","g":"احساسی","r":265800},{"id":1764000000054,"d":"2026-11-13","t":"e","a":35000,"c":"اشتراک","p":"","acc":"بلو","to":"","n":"vpn","f":"","g":"غیرضروری","r":100000},{"id":1764000000055,"d":"2026-11-14","t":"e","a":300000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":270000},{"id":1764000000056,"d":"2026-11-14","t":"e","a":4000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"پارک دانشگاه","f":"","g":"ضروری","r":270000},{"id":1764000000057,"d":"2026-11-14","t":"e","a":85000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"","g":"احساسی","r":272000},{"id":1764000000058,"d":"2026-11-15","t":"e","a":30000,"c":"غذا","p":"","acc":"بلو","to":"","n":"ژله","f":"","g":"غیرضروری","r":273000},{"id":1764000000059,"d":"2026-11-15","t":"e","a":505000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"حس خوبی داشت","g":"ضروری","r":270000},{"id":1764000000060,"d":"2026-11-15","t":"e","a":7000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"پارکینگ","f":"","g":"ضروری","r":270000},{"id":1764000000061,"d":"2026-11-17","t":"e","a":145000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":270000},{"id":1764000000062,"d":"2026-11-17","t":"e","a":10000,"c":"غذا","p":"","acc":"بلو","to":"","n":"خوراکی","f":"ضعف شدید داشتم و به اون ژله خیلی نیاز داشتم","g":"ضروری","r":270000},{"id":1764000000063,"d":"2026-11-18","t":"i","a":1000000,"c":"حقوق","p":"","acc":"ملی","to":"","n":"نصف پول این دوربینا و اینا","f":"به صورت کارت هدیه بود که اینو زدن به حسابم ، ۱ دیگه کارت هدیه هست","g":"","r":270000},{"id":1764000000064,"d":"2026-11-18","t":"t","a":1000000,"c":"","p":"","acc":"ملی","to":"جت کارت","n":"","f":"","g":"","r":270000},{"id":1764000000065,"d":"2026-11-18","t":"e","a":192250,"c":"غذا","p":"","acc":"بلو","to":"","n":"از کارت هدیه بود ولی از روی این کارت حساب میشه","f":"","g":"ضروری","r":270000},{"id":1764000000066,"d":"2026-11-18","t":"e","a":40000,"c":"حمل‌ونقل","p":"","acc":"بلو","to":"","n":"باد لاستیک ، از کارت هدیه بود ولی از روی این کارت حساب میشه","f":"","g":"ضروری","r":270000},{"id":1764000000067,"d":"2026-11-18","t":"i","a":1007750,"c":"حقوق","p":"","acc":"بلو","to":"","n":"پول کارت هدیه","f":"","g":"","r":270000},{"id":1764000000068,"d":"2026-11-18","t":"e","a":50000,"c":"اشتراک","p":"","acc":"بلو","to":"","n":"شارژ سیمکارت دوربین ماشین","f":"","g":"ضروری","r":270000},{"id":1764000000069,"d":"2026-11-19","t":"i","a":600000,"c":"سایر","p":"","acc":"بلو","to":"","n":"میترا زد برا vpn","f":"","g":"","r":270000},{"id":1764000000070,"d":"2026-11-19","t":"i","a":3000000,"c":"هدیه","p":"","acc":"جت کارت","to":"","n":"هدیه از طرف صغری سینه","f":"","g":"","r":270700},{"id":1764000000071,"d":"2026-11-19","t":"e","a":400000,"c":"اشتراک","p":"","acc":"بلو","to":"","n":"vpn","f":"","g":"ضروری","r":270000},{"id":1764000000072,"d":"2026-11-19","t":"e","a":882000,"c":"سایر","p":"","acc":"جت کارت","to":"","n":"قسط هنذری fa (بچ)","f":"خیلی خیلی فشار دارم میخورم سرش ، دیگه اون حرومزاده نیست و من هنوز دارم باخت میدم ، درس میشه .....","g":"غیرضروری","r":270000},{"id":1764000000073,"d":"2026-11-19","t":"l","a":500000,"c":"","p":"سرور","acc":"بلو","to":"","n":"سهم vpn سرور","f":"","g":"","r":270000},{"id":1764000000074,"d":"2026-11-20","t":"e","a":100000,"c":"اشتراک","p":"","acc":"جت کارت","to":"","n":"شارژ برای خودم","f":"","g":"ضروری","r":270000},{"id":1764000000075,"d":"2026-11-20","t":"e","a":60000,"c":"حمل‌ونقل","p":"","acc":"بلو","to":"","n":"بنزین","f":"","g":"ضروری","r":270000},{"id":1764000000076,"d":"2026-11-20","t":"e","a":250000,"c":"غذا","p":"","acc":"بلو","to":"","n":"خوراکی","f":"","g":"غیرضروری","r":270000},{"id":1764000000077,"d":"2026-11-20","t":"e","a":500000,"c":"سایر","p":"","acc":"جت کارت","to":"","n":"آرایشگاه","f":"","g":"ضروری","r":270000},{"id":1764000000078,"d":"2026-11-21","t":"e","a":4000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"ضروری","f":"","g":"","r":270000},{"id":1764000000079,"d":"2026-11-21","t":"e","a":100000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"خوراکی","f":"","g":"احساسی","r":270000},{"id":1764000000080,"d":"2026-11-21","t":"e","a":276000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"پیراشکی","f":"","g":"احساسی","r":270000},{"id":1764000000081,"d":"2026-11-21","t":"e","a":20000,"c":"اشتراک","p":"","acc":"بلو","to":"","n":"شارژ","f":"","g":"ضروری","r":270000},{"id":1764000000082,"d":"2026-11-21","t":"e","a":3500,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"پارکینگ","f":"","g":"ضروری","r":270000},{"id":1764000000083,"d":"2026-11-21","t":"i","a":542000,"c":"سود","p":"","acc":"جت کارت","to":"","n":"سود حامی","f":"","g":"","r":270000},{"id":1764000000084,"d":"2026-11-22","t":"e","a":95000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"آبمیوه","f":"","g":"ضروری","r":270000},{"id":1764000000085,"d":"2026-11-22","t":"e","a":183000,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"اسنپ از بیمارستان به دانشگاه","f":"","g":"ضروری","r":270000},{"id":1764000000086,"d":"2026-11-22","t":"e","a":450000,"c":"غذا","p":"","acc":"بلو","to":"","n":"قهوه خونه","f":"","g":"غیرضروری","r":270000},{"id":1764000000087,"d":"2026-11-22","t":"e","a":516600,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"پروتئین بار","f":"","g":"غیرضروری","r":270000},{"id":1764000000088,"d":"2026-11-22","t":"e","a":74000,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"اسنپ از خونه به قهوه خونه","f":"","g":"غیرضروری","r":270000},{"id":1764000000089,"d":"2026-11-22","t":"e","a":4000,"c":"حمل‌ونقل","p":"","acc":"ملت","to":"","n":"ضروری","f":"","g":"","r":270000},{"id":1764000000090,"d":"2026-11-23","t":"e","a":45000,"c":"خرید","p":"","acc":"جت کارت","to":"","n":"سیگار","f":"","g":"غیرضروری","r":270000},{"id":1764000000091,"d":"2026-11-23","t":"e","a":65000,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"از خونه به اون گوشی فروشی عن","f":"بشدت زورم اومد چون نه کار من بود ، نه اینکه انجام شد","g":"غیرضروری","r":270000},{"id":1764000000092,"d":"2026-11-23","t":"e","a":74000,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"از اون گوشی فروشی به پاساژ برای مودم","f":"اینم زورم اومد چون بازم این کار خودم نبود","g":"غیرضروری","r":270000},{"id":1764000000093,"d":"2026-11-23","t":"e","a":240000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"اشترودل برا ناهار","f":"","g":"ضروری","r":270000},{"id":1764000000094,"d":"2026-11-23","t":"e","a":35000,"c":"اشتراک","p":"","acc":"جت کارت","to":"","n":"vpn یونس","f":"","g":"ضروری","r":270000},{"id":1764000000095,"d":"2026-11-23","t":"e","a":100000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"نوشیدنی گلاب زعفران","f":"","g":"غیرضروری","r":270000},{"id":1764000000096,"d":"2026-11-23","t":"e","a":250000,"c":"تفریح","p":"","acc":"جت کارت","to":"","n":"قلیون","f":"","g":"غیرضروری","r":270000},{"id":1764000000097,"d":"2026-11-23","t":"e","a":493000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"مرغ سوخاری","f":"","g":"غیرضروری","r":270000},{"id":1764000000098,"d":"2026-11-23","t":"e","a":77000,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"بلیط قطار تهران","f":"","g":"غیرضروری","r":270000},{"id":1764000000099,"d":"2026-11-24","t":"e","a":82000,"c":"حمل‌ونقل","p":"","acc":"جت کارت","to":"","n":"اسنپ خونه به بیمارستان","f":"","g":"","r":270000},{"id":1764000000100,"d":"2026-11-24","t":"i","a":1000000,"c":"هدیه","p":"","acc":"جت کارت","to":"","n":"میترا داد","f":"","g":"","r":270000},{"id":1764000000101,"d":"2026-11-24","t":"e","a":355000,"c":"غذا","p":"","acc":"جت کارت","to":"","n":"ناهار","f":"","g":"ضروری","r":292000}],"fixed":[],"tags":["ضروری","غیرضروری","احساسی","خرید بزرگ"],"limit":0,"last":{}};
+async function load(){try{const v=localStorage.getItem("fin");S=Object.assign(def(),v?JSON.parse(v):SEED)}catch(e){}$("#sync").textContent="ذخیره در این دستگاه"}
+function persist(){try{localStorage.setItem("fin",JSON.stringify(S))}catch(e){toast("ذخیره‌سازی ممکن نیست")}}
+function rateInfo(){const el=$("#rinfo");if(el)el.textContent="نرخ پیش‌فرض: "+fa(S.rate)}
+// ---- entry form
+function chips(el,list,cur,fn){el.innerHTML="";list.forEach(x=>{const b=document.createElement("button");b.className="chip"+(x==cur?" on":"");b.textContent=x;b.onclick=()=>{fn(x==cur?"":x);drawForm()};el.append(b)})}
+function shortChip(q){const b=document.createElement("button");b.className="chip sc";b.textContent=(q.ic||"★")+" "+q.n+(q.a?" · "+fa(q.a):"");if(q.col){b.style.borderColor=q.col;b.style.color=q.col}
+ let lp=0,tm=0;b.onpointerdown=()=>{lp=0;tm=setTimeout(()=>{lp=1;view="set";draw();scrollTo(0,0);toast("میان‌بُرها را اینجا ویرایش کنید")},700)};b.onpointerup=b.onpointerleave=b.onpointercancel=()=>clearTimeout(tm);
+ b.onclick=()=>{if(lp)return;if(q.now&&q.a&&((q.t=="e"||q.t=="i")?q.c:q.p)){S.tx.push({id:Date.now(),d:iso(new Date()),t:q.t,a:q.a,c:q.c||"",p:q.p||"",acc:q.acc||S.accounts[0].n,to:"",n:q.note||q.n,f:"",g:q.g||"",r:S.rate});persist();toast("ثبت شد ✓ "+q.n);return}
+  $("#amt").value=q.a?fa(q.a):"";cat=q.c||"";tag=q.g||"";if(q.p)$("#pn").value=q.p;$("#note").value=q.note||"";drawForm();if(q.acc)$("#acc").value=q.acc;showUsd()};$("#quick").append(b)}
+function drawForm(){
+ document.querySelectorAll("#typeSeg button").forEach(b=>{b.className=(b.dataset.t==T?"on "+T:"")});
+ const P=T=="l"||T=="b";$("#catBox").classList.toggle("hid",T=="t"||P);$("#pBox").classList.toggle("hid",!P);$("#toBox").classList.toggle("hid",T!="t");$("#tagBox").classList.toggle("hid",T!="e");
+ $("#accLbl").textContent=T=="t"||T=="l"?"از حساب":T=="e"?"پرداخت از حساب":"واریز به حساب";
+ if(T=="e"||T=="i")chips($("#cats"),S.cats[T],cat,v=>cat=v);
+ chips($("#tags"),S.tags,tag,v=>tag=v);
+ $("#pl").innerHTML=persons().map(p=>`<option value="${p.n}">`).join("");
+ const o=S.accounts.map(a=>`<option>${a.n}</option>`).join("");const a=$("#acc").value,t=$("#to").value;
+ $("#acc").innerHTML=o;$("#to").innerHTML=o;if(a)$("#acc").value=a;$("#to").value=t||(S.accounts[1]||S.accounts[0]).n;
+if(!$("#rt").value)$("#rt").value=fa(S.rate);
+const g={};S.tx.slice(-300).filter(x=>x.t==T).forEach(x=>{const k=[x.c,x.p,x.n,x.acc,x.to,x.g,x.a].join("|");(g[k]||(g[k]={x,n:0})).n++});
+ const top=S.autoSug===false?[]:Object.values(g).sort((a,b)=>b.n-a.n||b.x.id-a.x.id).slice(0,S.autoN==null?6:S.autoN),scs=(S.quick||[]).filter(q=>q.t==T);$("#qLbl").textContent=top.length||scs.length?"میان‌بُرها (با یک لمس پر می‌شود)":"";$("#quick").innerHTML="";scs.forEach(shortChip);
+ top.forEach(({x})=>{const b=document.createElement("button");b.className="chip";b.textContent=(x.n||x.p||x.c||x.acc)+" · "+fa(x.a);
+  b.onclick=()=>{$("#amt").value=fa(x.a);cat=x.c;tag=x.g||"";if(x.p)$("#pn").value=x.p;$("#note").value=x.n||"";drawForm();$("#acc").value=x.acc;if(x.to)$("#to").value=x.to;showUsd()};$("#quick").append(b)});
+ $("#dateFa").textContent=pstr($("#date").value||iso(new Date()));
+}
+$("#typeSeg").onclick=e=>{if(e.target.dataset.t){T=e.target.dataset.t;cat="";tag="";drawForm();if(S.last&&S.last[T])$("#acc").value=S.last[T]}};
+const fmtIn=el=>{const n=norm(el.value);el.value=n?(+n).toLocaleString("fa-IR"):"";return +n};
+const curRate=()=>+norm($("#rt").value)||S.rate;
+function showUsd(){const n=+norm($("#amt").value);$("#usd").textContent=n?"≈ "+(n/curRate()).toLocaleString("fa-IR",{maximumFractionDigits:2})+" دلار":""}
+$("#amt").oninput=e=>{fmtIn(e.target);showUsd()};
+$("#rt").oninput=e=>{fmtIn(e.target);showUsd()};
+$("#date").onchange=drawForm;
+$("#save").onclick=()=>{const a=+norm($("#amt").value);if(!a)return toast("مبلغ را وارد کنید");
+ if((T=="e"||T=="i")&&!cat)return toast("دسته‌بندی را انتخاب کنید");
+ if((T=="l"||T=="b")&&!$("#pn").value.trim())return toast("نام شخص را بنویسید");
+ if(T=="t"&&$("#acc").value==$("#to").value)return toast("حساب مبدا و مقصد یکی است");
+ S.tx.push({id:Date.now(),d:$("#date").value,t:T,a,c:(T=="e"||T=="i")?cat:"",p:(T=="l"||T=="b")?$("#pn").value.trim():"",f:$("#fl").value.trim(),acc:$("#acc").value,to:T=="t"?$("#to").value:"",n:$("#note").value.trim(),g:T=="e"?tag:"",r:curRate()});
+ S.rate=curRate();(S.last=S.last||{})[T]=$("#acc").value;persist();rateInfo();$("#amt").value="";$("#usd").textContent="";$("#note").value="";$("#fl").value="";$("#pn").value="";cat="";tag="";drawForm();toast("ثبت شد ✓")};
+// ---- calculations
+const inM=k=>S.tx.filter(x=>key(x.d)==k);
+const sum=(l,t)=>l.filter(x=>x.t==t).reduce((s,x)=>s+x.a,0);
+function bal(){return S.accounts.map(a=>{let b=+a.open||0;S.tx.forEach(x=>{if(x.t=="i"&&x.acc==a.n)b+=x.a;if(x.t=="e"&&x.acc==a.n)b-=x.a;if(x.t=="l"&&x.acc==a.n)b-=x.a;if(x.t=="b"&&x.acc==a.n)b+=x.a;if(x.t=="t"){if(x.acc==a.n)b-=x.a;if(x.to==a.n)b+=x.a}});return{n:a.n,b}})}
+function persons(){const m={};S.tx.filter(x=>x.t=="l"||x.t=="b").forEach(x=>{const p=m[x.p]||(m[x.p]={n:x.p,net:0,g:0,r:0,items:[]});p.net+=x.t=="l"?x.a:-x.a;if(x.t=="l")p.g+=x.a;else p.r+=x.a;p.items.push(x)});
+ return Object.values(m).map(p=>(p.items.sort((a,b)=>b.d.localeCompare(a.d)),p)).sort((a,b)=>Math.abs(b.net)-Math.abs(a.net))}
+function fixedCard(){if(!S.fixed.length)return "";const m=inM(ym),cur=ym==key(iso(new Date()));
+ const rows=S.fixed.map(f=>{const p=m.some(x=>x.fx==f.id);return `<div class="line" style="align-items:center;margin:8px 0"><span>${f.n}</span><span>${fa(f.a)} ${p?'<b class="pos">✓</b>':cur?`<button class="chip" onclick="payFx(${f.id})">ثبت پرداخت</button>`:'<span class="sub">—</span>'}</span></div>`}).join("");
+ const tot=S.fixed.reduce((s,f)=>s+f.a,0),left=S.fixed.filter(f=>!m.some(x=>x.fx==f.id)).reduce((s,f)=>s+f.a,0);
+ return `<div class="card"><b>هزینه‌های ثابت ماهانه</b><div class="sub" style="margin-top:4px">جمع: ${fa(tot)} · پرداخت‌نشده این ماه: ${fa(left)}</div>${rows}</div>`}
+function debtCard(){const P=persons();if(!P.length)return "";const o=P.filter(p=>p.net>0).reduce((s,p)=>s+p.net,0),w=0-P.filter(p=>p.net<0).reduce((s,p)=>s+p.net,0);
+ return `<div class="card"><b>طلب و بدهی</b><div class="grid" style="margin-top:10px"><div class="k"><small>طلب من</small><div class="pos">${fa(o)}</div></div><div class="k"><small>بدهی من</small><div class="neg">${fa(w)}</div></div></div></div>`}
+window.payFx=id=>{const f=S.fixed.find(x=>x.id==id);if(!f)return;S.tx.push({id:Date.now(),d:iso(new Date()),t:"e",a:f.a,c:f.c||S.cats.e[0],acc:f.acc||S.accounts[0].n,to:"",p:"",n:f.n,f:"",g:"",fx:f.id,r:S.rate});persist();draw();toast("ثبت شد ✓")};
+function monthDays(k){let d=new Date();d.setHours(12,0,0,0);let g=0;
+ while(key(iso(d))!=k&&g++<600)d.setDate(d.getDate()+(k>key(iso(d))?20:-20));
+ d.setDate(d.getDate()-(pp(iso(d)).day-1));const out=[];while(key(iso(d))==k&&out.length<32){out.push(iso(d));d.setDate(d.getDate()+1)}return out}
+const pd=d=>{const p=pp(d);return fa(p.day)+" "+MN[p.month-1]};
+function dailyCard(){const days=monthDays(ym),today=iso(new Date()),cur=ym==key(today),by={};
+ inM(ym).forEach(x=>{const o=by[x.d]||(by[x.d]={e:0,i:0});if(x.t=="e")o.e+=x.a;if(x.t=="i")o.i+=x.a});
+ const passed=Math.max(1,cur?days.filter(d=>d<=today).length:days.length),E=days.reduce((s,d)=>s+(by[d]?by[d].e:0),0);
+ let mx=0,md="";days.forEach(d=>{const v=by[d]?by[d].e:0;if(v>mx){mx=v;md=d}});
+ const free=days.filter(d=>(!cur||d<=today)&&!(by[d]&&by[d].e>0)).length;
+ const top=Math.max(1,...days.map(d=>Math.max(by[d]?by[d].e:0,by[d]?by[d].i:0))),w=300/Math.max(1,days.length);
+ const svg=`<svg viewBox="0 0 300 100" width="100%">${days.map((d,j)=>{const o=by[d]||{e:0,i:0},x=j*w,he=o.e/top*70,hi=o.i/top*70;
+  return `<rect x="${x+w*.08}" y="${80-hi}" width="${w*.4}" height="${hi}" rx="1" fill="#1b873f"/><rect x="${x+w*.5}" y="${80-he}" width="${w*.4}" height="${he}" rx="1" fill="#d24545"/>${(j+1)%5==0||j==0?`<text x="${x+w/2}" y="94" text-anchor="middle">${fa(j+1)}</text>`:""}`}).join("")}</svg>`;
+ const rows=days.filter(d=>by[d]&&(by[d].e||by[d].i)).reverse().map(d=>{const o=by[d];
+  return `<div style="margin:9px 0"><div class="line"><span>${pd(d)}</span><span>${o.e?`<span class="neg">−${fa(o.e)}</span>`:""}${o.i?` <span class="pos">+${fa(o.i)}</span>`:""}</span></div><div class="bar" style="margin:3px 0 0"><i class="${mx&&o.e>=mx?"over":""}" style="width:${mx?o.e/mx*100:0}%"></i></div></div>`}).join("");
+ return `<div class="card"><b>هزینه روزبه‌روز</b> <span class="sub">(سبز درآمد، قرمز هزینه)</span>${svg}
+ <div class="grid" style="margin:8px 0"><div class="k"><small>میانگین هزینهٔ روزانه</small><div>${fa(E/passed)}</div></div><div class="k"><small>بیشترین خرج یک روز</small><div>${fa(mx)}</div><small>${md?pd(md):"—"}</small></div></div>
+ <div class="sub">روزهای بدون هزینه: ${fa(free)} از ${fa(cur?days.filter(d=>d<=today).length:days.length)}</div>${rows||'<div class="sub" style="margin-top:8px">در این ماه هنوز چیزی ثبت نشده</div>'}</div>`}
+const WD=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
+const addD=(d,n)=>{const x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return iso(x)};
+const wk=d=>addD(d,-((new Date(d+"T12:00:00").getDay()+1)%7));
+function insightCard(){const l=inM(ym),pl=inM(shift(ym,-1)),E=sum(l,"e"),pE=sum(pl,"e"),today=iso(new Date()),cur=ym==key(today),L=[];
+ if(pE>0&&E>0)L.push(`هزینهٔ این ماه ${fa(Math.abs(E/pE-1)*100)}٪ ${E>=pE?"بیشتر":"کمتر"} از ماه قبل است`);
+ const byC={};l.filter(x=>x.t=="e").forEach(x=>byC[x.c]=(byC[x.c]||0)+x.a);const top=Object.entries(byC).sort((a,b)=>b[1]-a[1])[0];
+ if(top)L.push(`بیشترین سهم هزینه: ${top[0]} (${fa(top[1]/E*100)}٪)`);
+ const un=S.tags[1]?l.filter(x=>x.t=="e"&&x.g==S.tags[1]).reduce((s,x)=>s+x.a,0):0;if(un&&E)L.push(`${fa(un/E*100)}٪ هزینه‌ها «${S.tags[1]}» بوده`);
+ let al="";if(cur){const lim=+S.limit||Object.values(S.budgets).reduce((s,v)=>s+(+v||0),0);
+  if(lim>0){const left=Math.max(1,monthDays(ym).filter(d=>d>=today).length),td=l.filter(x=>x.t=="e"&&x.d==today).reduce((s,x)=>s+x.a,0),base=(lim-(E-td))/left,rest=base-td;
+   al=E>lim?`<div class="k" style="margin-bottom:8px"><small>از سقف ماه گذشته‌اید</small><div class="neg">${fa(E-lim)}</div></div>`:`<div class="k" style="margin-bottom:8px"><small>امروز می‌توانید تا اینقدر خرج کنید</small><div class="${rest>=0?"pos":"neg"}" style="font-size:22px">${fa(Math.max(rest,0))}</div><small>سقف روزانه ${fa(base)} · امروز تاکنون ${fa(td)} · ${fa(left)} روز مانده</small></div>`}
+  else al=`<div class="sub" style="margin-bottom:8px">برای دیدن «مبلغ مجاز خرج امروز»، سقف هزینهٔ ماهانه را در تنظیمات بنویسید.</div>`}
+ return `<div class="card">${al}${L.map(t=>`<div style="margin:5px 0">• ${t}</div>`).join("")||'<div class="sub">با ثبت تراکنش‌ها، اینجا خلاصهٔ هوشمند می‌آید</div>'}</div>`}
+function weekCard(){const t=iso(new Date()),w0=wk(t),ws=[];for(let i=7;i>=0;i--)ws.push(addD(w0,-7*i));
+ const v=ws.map(s=>S.tx.filter(x=>x.t=="e"&&x.d>=s&&x.d<addD(s,7)).reduce((q,x)=>q+x.a,0)),cur=v[7],prev=v[6],mx=Math.max(1,...v);
+ const by={};inM(ym).filter(x=>x.t=="e").forEach(x=>by[x.d]=(by[x.d]||0)+x.a);const sw=Array(7).fill(0),cn=Array(7).fill(0);
+ monthDays(ym).filter(d=>d<=t).forEach(d=>{const i=(new Date(d+"T12:00:00").getDay()+1)%7;sw[i]+=by[d]||0;cn[i]++});
+ const av=sw.map((q,i)=>cn[i]?q/cn[i]:0),am=Math.max(1,...av),mi=av.indexOf(Math.max(...av));
+ return `<div class="card"><b>هفته‌ها</b><div class="grid" style="margin:8px 0"><div class="k"><small>این هفته (از شنبه)</small><div>${fa(cur)}</div></div><div class="k"><small>هفتهٔ قبل</small><div>${fa(prev)}</div><small>${prev?`<span class="${cur>prev?"neg":"pos"}">${cur>prev?"▲":"▼"} ${fa(Math.abs(cur/prev-1)*100)}٪</span>`:""}</small></div></div>
+ <svg viewBox="0 0 300 70" width="100%">${v.map((q,j)=>`<rect x="${j*37+6}" y="${64-q/mx*58}" width="26" height="${q/mx*58}" rx="3" fill="${j==7?"var(--pri)":"#9bb0c4"}"/>`).join("")}</svg><div class="sub">۸ هفتهٔ اخیر (از چپ به راست: قدیمی به جدید)</div>
+ <b style="display:block;margin-top:12px">میانگین خرج هر روز هفته (این ماه)</b>${WD.map((n,i)=>`<div class="line" style="margin-top:8px"><span>${n}</span><span>${fa(av[i])}</span></div><div class="bar" style="margin:3px 0 0"><i class="${i==mi&&av[mi]>0?"over":""}" style="width:${av[i]/am*100}%"></i></div>`).join("")}</div>`}
+let fym=null;
+const mname=k=>MN[k%100-1]+" "+fa(Math.floor(k/100)).replace(/٬/g,"");
+const accOf=(p,a)=>p>0?Math.max(0,100-Math.abs(a-p)/p*100):null;
+window.fmv=n=>{fym=shift(fym,n);fcView()};
+window.fcAdd=()=>{S.fc.push({id:Date.now(),ym:fym,c:S.cats.e[0],a:0,n:""});persist();fcView()};
+window.fcSet=(id,k,v)=>{const r=S.fc.find(x=>x.id==id);if(!r)return;r[k]=k=="a"?(+norm(v)||0):v;persist();fcView()};
+window.fcDel=id=>{S.fc=S.fc.filter(x=>x.id!=id);persist();fcView()};
+window.fcCopy=()=>{const p=S.fc.filter(r=>r.ym==shift(fym,-1));if(!p.length)return toast("ماه قبل پیش‌بینی ندارد");
+ p.forEach((r,i)=>S.fc.push({id:Date.now()+i,ym:fym,c:r.c,a:r.a,n:r.n}));persist();fcView()};
+window.fcSuggest=()=>{const m=[1,2,3].map(i=>shift(fym,-i)),by={};
+ m.forEach(k=>inM(k).filter(x=>x.t=="e").forEach(x=>by[x.c]=(by[x.c]||0)+x.a));
+ const have=new Set(S.fc.filter(r=>r.ym==fym).map(r=>r.c));let n=0;
+ Object.entries(by).forEach(([c,v])=>{if(!have.has(c)){S.fc.push({id:Date.now()+n++,ym:fym,c,a:Math.round(v/3/10000)*10000,n:"میانگین ۳ ماه قبل"})}});
+ if(!n)return toast("موردی برای افزودن نبود");persist();fcView()};
+function fcView(){const cur=key(iso(new Date()));if(!fym)fym=cur;
+ const rows=S.fc.filter(r=>r.ym==fym),P=rows.reduce((q,r)=>q+r.a,0),L=inM(fym).filter(x=>x.t=="e"),A=L.reduce((q,x)=>q+x.a,0),byC={},aC={};
+ rows.forEach(r=>byC[r.c]=(byC[r.c]||0)+r.a);L.forEach(x=>aC[x.c]=(aC[x.c]||0)+x.a);
+ const cats=[...new Set([...Object.keys(byC),...Object.keys(aC)])].sort((a,b)=>(byC[b]||0)-(byC[a]||0)||(aC[b]||0)-(aC[a]||0)),done=fym<cur;
+ const ms=[...new Set(S.fc.map(r=>r.ym))].sort((a,b)=>b-a).map(k=>{const p=S.fc.filter(r=>r.ym==k).reduce((q,r)=>q+r.a,0),a=sum(inM(k),"e");return{k,p,a,ac:accOf(p,a),done:k<cur}});
+ const fin=ms.filter(m=>m.done&&m.ac!=null),avg=fin.length?fin.reduce((q,m)=>q+m.ac,0)/fin.length:null,mr=fin.length?fin.reduce((q,m)=>q+m.a/m.p,0)/fin.length:null;
+ const ac=accOf(P,A),cl=v=>v==null?"":v>=85?"pos":v>=60?"":"neg",opts=c=>(S.cats.e.includes(c)?S.cats.e:[...S.cats.e,c]).map(x=>`<option${x==c?" selected":""}>${x}</option>`).join("");
+ $("#v-fc").innerHTML=`<div class="mon card"><button onclick="fmv(1)">›</button><b>${mname(fym)}</b><button onclick="fmv(-1)">‹</button></div>
+ <div class="card"><b>هزینه‌های احتمالی این ماه</b><div class="sub" style="margin:4px 0">هر چه فکر می‌کنید خرج می‌کنید بنویسید؛ هر لحظه قابل تغییر است.</div>
+ ${rows.map(r=>`<div class="row" style="margin-top:8px"><select onchange="fcSet(${r.id},'c',this.value)">${opts(r.c)}</select><input inputmode="numeric" value="${r.a?fa(r.a):""}" placeholder="مبلغ" onchange="fcSet(${r.id},'a',this.value)"><button class="chip" style="flex:0 0 44px" onclick="fcDel(${r.id})">✕</button></div><input placeholder="توضیح (اختیاری)" value="${esc(r.n)}" style="margin-top:4px" onchange="fcSet(${r.id},'n',this.value)">`).join("")||'<div class="sub" style="margin-top:8px">هنوز چیزی ننوشته‌اید</div>'}
+ <button class="btn s" onclick="fcAdd()">＋ افزودن هزینهٔ احتمالی</button><div class="row"><button class="btn s" onclick="fcCopy()">کپی از ماه قبل</button><button class="btn s" onclick="fcSuggest()">پیشنهاد از میانگین ۳ ماه</button></div></div>
+ <div class="card"><b>جمع‌بندی پیش‌بینی</b><div class="grid" style="margin:10px 0"><div class="k"><small>هزینهٔ احتمالی کل</small><div>${fa(P)}</div></div><div class="k"><small>${done?"هزینهٔ واقعی":"تا امروز خرج شده"}</small><div>${fa(A)}</div></div></div>
+ ${P?`<div class="bar"><i class="${A>P?"over":""}" style="width:${Math.min(100,A/P*100)}%"></i></div><div class="line sub"><span>${fa(A/P*100)}٪ از پیش‌بینی مصرف شده</span><span>${A>P?"بیشتر از پیش‌بینی: "+fa(A-P):"مانده: "+fa(P-A)}</span></div>`:""}
+ <div style="margin-top:12px">${cats.map(c=>{const p=byC[c]||0,a=aC[c]||0;return `<div class="line" style="margin-top:8px"><span>${c}${p&&P?" · "+fa(p/P*100)+"٪ از برنامه":""}</span><span>${fa(a)} از ${fa(p)}</span></div><div class="bar" style="margin:3px 0 0"><i class="${p&&a>p?"over":""}" style="width:${p?Math.min(100,a/p*100):(a?100:0)}%"></i></div>`}).join("")||'<div class="sub">—</div>'}</div></div>
+ <div class="card"><b>دقت پیش‌بینی</b><div class="sub" style="margin:4px 0 10px">دقت = ۱۰۰٪ منهای درصد اختلاف واقعی با پیش‌بینی. هر چه به ۱۰۰٪ نزدیک‌تر، پیش‌بینی دقیق‌تر.</div>
+ ${ac==null?'<div class="sub">برای این ماه پیش‌بینی ننوشته‌اید.</div>':`<div class="grid"><div class="k"><small>دقت این ماه${done?"":" (موقت؛ ماه تمام نشده)"}</small><div class="${cl(ac)}" style="font-size:22px">${fa(ac)}٪</div></div><div class="k"><small>نسبت واقعی به پیش‌بینی</small><div>${fa(A/P*100)}٪</div><small>پیش‌بینی ${fa(P)} · واقعی ${fa(A)}</small></div></div>`}
+ ${avg!=null?`<div class="k" style="margin:10px 0"><small>میانگین دقت ماه‌های تمام‌شده</small><div class="${cl(avg)}">${fa(avg)}٪</div><small>معمولاً هزینه‌ها ${fa(Math.abs(mr-1)*100)}٪ ${mr>1?"بیشتر":"کمتر"} از پیش‌بینی شما درآمده</small></div>`:'<div class="sub" style="margin-top:8px">میانگین دقت پس از تمام‌شدن اولین ماهِ دارای پیش‌بینی نمایش داده می‌شود.</div>'}
+ ${ms.length?`<div class="day">ماه‌ها</div>${ms.map(m=>`<div class="line" style="margin:7px 0"><span>${mname(m.k)}${m.done?"":" ⏳"}</span><span>${fa(m.p)} → ${fa(m.a)} · <b class="${cl(m.ac)}">${m.ac==null?"—":fa(m.ac)+"٪"}</b></span></div>`).join("")}`:""}
+ ${cats.some(c=>byC[c])?`<div class="day">دقت به تفکیک دسته (این ماه)</div>${cats.filter(c=>byC[c]).map(c=>{const v=accOf(byC[c],aC[c]||0);return `<div class="line" style="margin:7px 0"><span>${c}</span><span>${fa(byC[c])} → ${fa(aC[c]||0)} · <b class="${cl(v)}">${fa(v)}٪</b></span></div>`}).join("")}`:""}</div>`}
+const shift=(k,n)=>{let y=Math.floor(k/100),m=k%100-1+n;y+=Math.floor(m/12);m=((m%12)+12)%12;return y*100+m+1};
+function monthNav(){return `<div class="mon card"><button onclick="mv(1)">›</button><b>${MN[ym%100-1]} ${fa(Math.floor(ym/100)).replace(/٬/g,"")}</b><button onclick="mv(-1)">‹</button></div>`}
+window.mv=n=>{ym=shift(ym,n);draw()};
+// ---- dashboard
+function dash(){dash0();const cs=[...document.querySelectorAll("#v-dash > .card")],T={"هزینه روزبه‌روز":"day","هفته‌ها":"week","موجودی حساب‌ها":"acc","هزینه به تفکیک دسته و بودجه":"cat","هزینه‌های ثابت ماهانه":"fix","طلب و بدهی":"debt","عادت‌های خرج‌کردن":"hab","۶ ماه اخیر":"six"};
+ cs.forEach((c,i)=>{const b=c.querySelector("b"),k=i==1?"ins":i==2?"kpi":b&&T[b.textContent.trim()];if(k&&S.sec&&S.sec[k]===0)c.remove()})}
+function dash0(){
+ const l=inM(ym),pl=inM(shift(ym,-1)),I=sum(l,"i"),E=sum(l,"e"),pI=sum(pl,"i"),pE=sum(pl,"e"),net=I-E;
+ const ch=(a,b,bad)=>b?`<span class="${(a>=b)!=bad?"pos":"neg"}">${a>=b?"▲":"▼"} ${fa(Math.abs(a/b-1)*100)}٪</span>`:"";
+ const B=bal(),tot=B.reduce((s,x)=>s+x.b,0);
+ const byC={};l.filter(x=>x.t=="e").forEach(x=>byC[x.c]=(byC[x.c]||0)+x.a);
+ const cs=Object.entries(byC).sort((a,b)=>b[1]-a[1]);
+ const tg=g=>l.filter(x=>x.t=="e"&&x.g==g).reduce((s,x)=>s+x.a,0);
+ let months=[];for(let i=5;i>=0;i--){const k=shift(ym,-i),m=inM(k);months.push({k,i:sum(m,"i"),e:sum(m,"e")})}
+ const mx=Math.max(1,...months.map(m=>Math.max(m.i,m.e)));
+ const svg=`<svg viewBox="0 0 300 120" width="100%">${months.map((m,j)=>{const x=j*50+8;return `<rect x="${x}" y="${96-m.i/mx*80}" width="16" height="${m.i/mx*80}" rx="3" fill="#1b873f"/><rect x="${x+18}" y="${96-m.e/mx*80}" width="16" height="${m.e/mx*80}" rx="3" fill="#d24545"/><text x="${x+17}" y="112" text-anchor="middle">${MN[m.k%100-1]}</text>`}).join("")}</svg>`;
+ $("#v-dash").innerHTML=monthNav()+`${insightCard()}<div class="card"><div class="grid">
+ <div class="k"><small>درآمد</small><div class="pos">${fa(I)}</div><small>${ch(I,pI)}</small></div>
+ <div class="k"><small>هزینه</small><div class="neg">${fa(E)}</div><small>${ch(E,pE,1)}</small></div>
+ <div class="k"><small>خالص ماه</small><div class="${net>=0?"pos":"neg"}">${fa(net)}</div><small>≈ ${(net/S.rate).toLocaleString("fa-IR",{maximumFractionDigits:0})} دلار</small></div>
+ <div class="k"><small>نرخ پس‌انداز</small><div>${I?fa(Math.max(0,net)/I*100):"۰"}٪</div></div></div></div>
+ ${dailyCard()}${weekCard()}<div class="card"><b>موجودی حساب‌ها</b><div style="font:800 22px Vazirmatn;margin:6px 0">${fa(tot)} <small class="sub">تومان</small></div>${B.map(x=>`<div class="line"><span>${x.n}</span><span class="${x.b<0?"neg":""}">${fa(x.b)}</span></div>`).join("")}<div class="sub" style="margin-top:6px">≈ ${(tot/S.rate).toLocaleString("fa-IR",{maximumFractionDigits:0})} دلار</div></div>
+ <div class="card"><b>هزینه به تفکیک دسته و بودجه</b><div style="margin-top:10px">${cs.length?cs.map(([c,v])=>{const bd=+S.budgets[c]||0;const p=bd?v/bd:v/E;return `<div class="line"><span>${c}</span><span>${fa(v)}${bd?" از "+fa(bd):""}</span></div><div class="bar"><i class="${bd&&v>bd?"over":""}" style="width:${Math.min(100,p*100)}%"></i></div>`}).join(""):'<div class="sub">هنوز هزینه‌ای ثبت نشده</div>'}</div></div>
+ ${fixedCard()}${debtCard()}<div class="card"><b>عادت‌های خرج‌کردن</b><div class="grid" style="margin-top:10px">${S.tags.map(g=>`<div class="k"><small>${g}</small><div>${fa(tg(g))}</div><small>${E?fa(tg(g)/E*100):0}٪ از هزینه</small></div>`).join("")}</div></div>
+ <div class="card"><b>۶ ماه اخیر</b> <span class="sub">(سبز درآمد، قرمز هزینه)</span>${svg}</div>
+ <button class="btn s" onclick="exp()">دانلود Excel</button>`;
+}
+// ---- list
+const esc=t=>String(t==null?"":t).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+const ttl=x=>x.t=="t"?x.acc+" ← "+x.to:x.t=="l"?"دادم به "+x.p:x.t=="b"?"گرفتم از "+x.p:x.c;
+function list(){
+ $("#v-list").innerHTML=`<div class="seg" style="margin-bottom:10px"><button data-l="list" class="${lsub=="list"?"on":""}">تراکنش‌ها</button><button data-l="feel" class="${lsub=="feel"?"on":""}">دفتر احساس</button></div>`+(lsub=="feel"?`<div id="lres"></div>`:
+ monthNav()+`<div class="card"><input id="fq" placeholder="جست‌وجو: توضیح، دسته، شخص، احساس…" value="${esc(F.q)}"><div class="row" style="margin-top:8px"><select id="ft"><option value="">همهٔ انواع</option>${[["e","هزینه"],["i","درآمد"],["t","انتقال"],["l","دادم"],["b","گرفتم"]].map(([k,v])=>`<option value="${k}"${F.t==k?" selected":""}>${v}</option>`).join("")}</select><select id="facc"><option value="">همهٔ حساب‌ها</option>${S.accounts.map(a=>`<option${F.acc==a.n?" selected":""}>${a.n}</option>`).join("")}</select></div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fall" style="width:auto"${F.all?" checked":""}> جست‌وجو در همهٔ ماه‌ها</label></div><div id="lres"></div>`);
+ document.querySelectorAll("#v-list .seg button").forEach(b=>b.onclick=()=>{lsub=b.dataset.l;list()});
+ if(lsub=="list"){$("#fq").oninput=e=>{F.q=e.target.value;lres()};$("#ft").onchange=e=>{F.t=e.target.value;lres()};$("#facc").onchange=e=>{F.acc=e.target.value;lres()};$("#fall").onchange=e=>{F.all=e.target.checked;lres()}}
+ lres()}
+function lres(){const el=$("#lres");if(lsub=="feel")return feel(el);
+ const l=(F.all?S.tx:inM(ym)).filter(x=>(!F.t||x.t==F.t)&&(!F.acc||x.acc==F.acc||x.to==F.acc)&&(!F.q||[x.n,x.c,x.p,x.f,x.g,x.acc,x.to].join(" ").includes(F.q.trim()))).sort((a,b)=>b.d.localeCompare(a.d)||b.id-a.id);
+ const tot={};l.forEach(x=>{const o=tot[x.d]||(tot[x.d]={e:0,i:0});if(x.t=="e")o.e+=x.a;if(x.t=="i")o.i+=x.a});let last="",h="";
+ l.forEach(x=>{if(x.d!=last){last=x.d;const o=tot[x.d];h+=`<div class="day line"><span>${pstr(x.d)}</span><span>${o.e?"هزینه "+fa(o.e):""}${o.e&&o.i?" · ":""}${o.i?"درآمد "+fa(o.i):""}</span></div>`}
+  const sub=[x.n,x.t=="e"?x.g:"",x.t!="t"?x.acc:""].filter(Boolean).join(" · ");
+  h+=`<div class="tx" onclick="edit(${x.id})"><div class="m">${ttl(x)}<small>${sub}</small>${x.f?`<small>💭 ${x.f}</small>`:""}</div><div class="${x.t=="i"?"pos":x.t=="e"?"neg":""}">${x.t=="e"||x.t=="l"?"−":x.t=="i"||x.t=="b"?"+":""}${fa(x.a)}</div><button class="del" onclick="event.stopPropagation();del(${x.id})">✕</button></div>`});
+ el.innerHTML=`<div class="sub" style="margin:2px 4px">${fa(l.length)} تراکنش · هزینه ${fa(sum(l,"e"))} · درآمد ${fa(sum(l,"i"))}</div><div class="card" style="padding:4px 14px">${h||'<div class="sub" style="padding:14px">تراکنشی پیدا نشد</div>'}</div>`}
+function feel(el){const l=S.tx.filter(x=>x.f).sort((a,b)=>b.d.localeCompare(a.d)||b.id-a.id),by={};
+ l.forEach(x=>{const k=x.t=="e"?(x.g||"بدون نوع"):x.t=="l"?"دادن پول":x.t=="b"?"گرفتن پول":x.t=="i"?"درآمد":"انتقال";const o=by[k]||(by[k]={n:0,a:0});o.n++;o.a+=x.a});
+ el.innerHTML=`<div class="card"><b>احساس‌هایی که نوشته‌اید</b><div class="sub" style="margin:4px 0 8px">${fa(l.length)} مورد</div>${Object.entries(by).sort((a,b)=>b[1].n-a[1].n).map(([k,o])=>`<div class="line" style="margin:6px 0"><span>${k}</span><span>${fa(o.n)} بار · ${fa(o.a)} تومان</span></div>`).join("")||'<div class="sub">هنوز احساسی ثبت نشده. در فرم ثبت، فیلد «احساس من» را پر کنید.</div>'}</div>
+ <div class="card" style="padding:4px 14px">${l.map(x=>`<div class="tx" onclick="edit(${x.id})"><div class="m">${ttl(x)}<small>${pstr(x.d)}${x.n?" · "+x.n:""}</small><small>💭 ${x.f}</small></div><div>${fa(x.a)}</div></div>`).join("")}</div>`}
+window.edit=id=>{const x=S.tx.find(t=>t.id==id);if(!x)return;const o=document.createElement("div");o.className="ov";
+ const opt=(arr,v)=>(!v||arr.includes(v)?arr:[...arr,v]).map(a=>`<option${a==v?" selected":""}>${a}</option>`).join(""),accs=S.accounts.map(a=>a.n);
+ o.innerHTML=`<div class="sheet"><b>ویرایش تراکنش</b><label>تاریخ</label><input type="date" id="e_d" value="${x.d}"><label>مبلغ (تومان)</label><input id="e_a" inputmode="numeric" value="${fa(x.a)}"><label>نرخ دلار</label><input id="e_r" inputmode="numeric" value="${fa(x.r||S.rate)}">
+ ${x.t=="e"||x.t=="i"?`<label>دسته‌بندی</label><select id="e_c">${opt(S.cats[x.t],x.c)}</select>`:""}${x.t=="l"||x.t=="b"?`<label>شخص</label><input id="e_p" value="${esc(x.p)}">`:""}
+ <label>${x.t=="t"?"از حساب":"حساب"}</label><select id="e_acc">${opt(accs,x.acc)}</select>${x.t=="t"?`<label>به حساب</label><select id="e_to">${opt(accs,x.to)}</select>`:""}
+ ${x.t=="e"?`<label>نوع هزینه</label><select id="e_g"><option value=""></option>${opt(S.tags,x.g)}</select>`:""}<label>توضیح</label><input id="e_n" value="${esc(x.n)}"><label>احساس من</label><input id="e_f" value="${esc(x.f)}">
+ <button class="btn" id="e_s">ذخیره</button>${x.t!="t"?'<button class="btn s" id="e_q">★ ساخت میان‌بُر از این تراکنش</button>':""}<div class="row"><button class="btn s" id="e_dup">ثبت دوباره (امروز)</button><button class="btn s" id="e_del" style="color:var(--exp)">حذف</button></div><button class="btn s" id="e_x">انصراف</button></div>`;
+ document.body.append(o);const q=s=>o.querySelector(s),close=()=>o.remove();q("#e_x").onclick=close;o.onclick=e=>{if(e.target==o)close()};
+ q("#e_s").onclick=()=>{const a=+norm(q("#e_a").value);if(!a)return toast("مبلغ را وارد کنید");
+  Object.assign(x,{d:q("#e_d").value||x.d,a,r:+norm(q("#e_r").value)||x.r,acc:q("#e_acc").value,n:q("#e_n").value.trim(),f:q("#e_f").value.trim()});
+  if(q("#e_c"))x.c=q("#e_c").value;if(q("#e_p"))x.p=q("#e_p").value.trim();if(q("#e_to"))x.to=q("#e_to").value;if(q("#e_g"))x.g=q("#e_g").value;persist();close();draw();toast("ذخیره شد ✓")};
+ if(q("#e_q"))q("#e_q").onclick=()=>{S.quick.push({id:Date.now(),n:x.n||x.c||x.p||"میان‌بُر",t:x.t,a:x.a,c:x.c,p:x.p,acc:x.acc,note:x.n,g:x.g,now:false});persist();close();toast("میان‌بُر ساخته شد؛ در تنظیمات قابل ویرایش است")};
+ q("#e_dup").onclick=()=>{S.tx.push({...x,id:Date.now(),d:iso(new Date())});persist();close();draw();toast("ثبت شد ✓")};
+ q("#e_del").onclick=()=>{if(confirm("این تراکنش حذف شود؟")){S.tx=S.tx.filter(t=>t.id!=x.id);persist();close();draw()}}};
+function debts(){const P=persons(),open=P.filter(p=>p.net>0),owe=P.filter(p=>p.net<0),done=P.filter(p=>p.net==0);
+ const G=P.reduce((q,p)=>q+p.g,0),Sd=P.reduce((q,p)=>q+Math.min(p.r,p.g),0),O=open.reduce((q,p)=>q+p.net,0),W=0-owe.reduce((q,p)=>q+p.net,0),pc=G?Math.round(Sd/G*100):0;
+ const prog=(p,sm)=>{const st=Math.min(p.r,p.g),c=p.g?Math.round(st/p.g*100):0;return `<div class="bar" style="margin:6px 0 2px"><i style="width:${c}%${sm?";background:var(--inc)":""}"></i></div><div class="line sub"><span>صاف‌شده ${fa(st)} از ${fa(p.g)}</span><span>${fa(c)}٪</span></div>`};
+ const card=p=>{const mine=p.net<0,sub=mine?`<span class="neg">بدهی من ${fa(-p.net)}</span>`:p.net>0?`<span class="pos">مانده ${fa(p.net)}</span>`:`<span class="pos">✓ تسویه‌شده</span>`;
+  const enc=encodeURIComponent(p.n);
+  return `<details class="card"><summary style="list-style:none"><div class="line" style="font-size:15px"><b>${p.n}</b>${sub}</div>${p.g?prog(p,p.net==0):""}</summary>
+  <div class="grid" style="margin:10px 0"><div class="k"><small>جمع داده‌ام</small><div>${fa(p.g)}</div></div><div class="k"><small>جمع گرفته‌ام</small><div>${fa(p.r)}</div></div></div>
+  ${p.items.map(x=>`<div class="tx" onclick="edit(${x.id})"><div class="m">${x.t=="l"?"دادم":"گرفتم"} · ${pstr(x.d)}<small>${x.n||""}${x.f?" 💭 "+x.f:""}</small></div><div class="${x.t=="b"?"pos":""}">${x.t=="b"?"+":"−"}${fa(x.a)}</div><button class="del" onclick="event.stopPropagation();del(${x.id})">✕</button></div>`).join("")}
+  ${p.net!=0?`<button class="btn s" onclick="settle(decodeURIComponent('${enc}'),'${p.net>0?"b":"l"}',${Math.abs(p.net)})">${p.net>0?"ثبت دریافت از او":"ثبت پرداخت به او"}</button>`:""}</details>`};
+ $("#v-deb").innerHTML=`<div class="card"><b>خلاصهٔ قرض‌دادن</b><div class="grid" style="margin-top:10px"><div class="k"><small>جمع قرض‌های داده‌شده</small><div>${fa(G)}</div></div><div class="k"><small>برگشته (صاف‌شده)</small><div class="pos">${fa(Sd)}</div></div><div class="k"><small>هنوز باید بگیرم</small><div>${fa(O)}</div></div><div class="k"><small>بدهی من به دیگران</small><div class="neg">${fa(W)}</div></div></div>
+ ${G?`<div class="bar" style="margin:12px 0 2px"><i style="width:${pc}%;background:var(--inc)"></i></div><div class="line sub"><span>${fa(pc)}٪ صاف شده</span><span>${fa(open.length)} نفر هنوز مانده</span></div>`:""}
+ <div class="sub" style="margin-top:8px">«دادم» یعنی به کسی پول دادم و «گرفتم» یعنی از کسی پول گرفتم (برگشت پول هم همین است). هر شخص را باز کنید تا سابقه و دکمهٔ ثبت را ببینید.</div></div>`+
+ (open.length?`<div class="day">طلب‌های باز</div>${open.map(card).join("")}`:"")+(owe.length?`<div class="day">بدهی من</div>${owe.map(card).join("")}`:"")+(done.length?`<div class="day">تسویه‌شده</div>${done.map(card).join("")}`:"")+(P.length?"":'<div class="card sub">هنوز طلب یا بدهی‌ای ثبت نشده</div>');
+}
+window.settle=(n,t,amt)=>{T=t;cat="";tag="";view="add";draw();$("#pn").value=n;$("#amt").value=amt?(+amt).toLocaleString("fa-IR"):"";showUsd();scrollTo(0,0)};
+window.del=id=>{if(confirm("این تراکنش حذف شود؟")){S.tx=S.tx.filter(x=>x.id!=id);persist();draw()}};
+// ---- settings
+function fixedSett(){const co=c=>S.cats.e.map(x=>`<option${x==c?" selected":""}>${x}</option>`).join(""),ao=a=>S.accounts.map(x=>`<option${x.n==a?" selected":""}>${x.n}</option>`).join("");
+ return `<div class="card"><b>هزینه‌های ثابت ماهانه</b><div class="sub" style="margin:4px 0">مثل اجاره، اینترنت، قسط، اشتراک. هر ماه در داشبورد با یک ضربه ثبت می‌شوند.</div>${S.fixed.map((f,i)=>`<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px"><div class="row"><input value="${f.n}" placeholder="نام" onchange="fx(${i},'n',this.value)"><input inputmode="numeric" value="${fa(f.a)}" onchange="fx(${i},'a',this.value)"></div><div class="row" style="margin-top:6px"><select onchange="fx(${i},'c',this.value)">${co(f.c)}</select><select onchange="fx(${i},'acc',this.value)">${ao(f.acc)}</select><button class="chip" style="flex:0 0 44px" onclick="fxDel(${i})">✕</button></div></div>`).join("")}<button class="btn s" onclick="fxAdd()">＋ هزینهٔ ثابت جدید</button></div>`}
+window.fx=(i,k,v)=>{S.fixed[i][k]=k=="a"?(+norm(v)||0):v.trim();persist();sett()};
+window.fxAdd=()=>{S.fixed.push({id:Date.now(),n:"هزینهٔ جدید",a:0,c:S.cats.e[0],acc:S.accounts[0].n});persist();sett()};
+window.fxDel=i=>{if(confirm("این هزینهٔ ثابت حذف شود؟")){S.fixed.splice(i,1);persist();sett()}};
+window.saveTags=()=>{const t=$("#tg").value.split(/[،,]/).map(x=>x.trim()).filter(Boolean);if(t.length){S.tags=t;persist();toast("ذخیره شد");drawForm()}};
+let PST=null;if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(v=>{PST=v}).catch(()=>{});
+let DIP=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();DIP=e});
+window.inst=async()=>{if(DIP){DIP.prompt();await DIP.userChoice;DIP=null;sett()}};
+function installCard(){const st=matchMedia("(display-mode: standalone)").matches||navigator.standalone,ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+ return `<div class="card"><b>نصب روی گوشی</b><div class="sub" style="margin:6px 0">${st?"✓ الان به‌صورت اپ نصب‌شده باز شده است.":DIP?"می‌توانید همین الان نصبش کنید.":ios?"در Safari: دکمهٔ اشتراک‌گذاری (مربع با فلش) ← Add to Home Screen. داخل تلگرام یا اینستاگرام این گزینه نیست؛ لینک را در Safari باز کنید.":"در Chrome: منوی سه‌نقطه ← Install app یا Add to Home screen. داخل تلگرام این گزینه نیست؛ لینک را در Chrome باز کنید."}</div>${DIP&&!st?'<button class="btn s" style="margin-top:0" onclick="inst()">نصب اپ</button>':""}<div class="sub" style="margin-top:8px;direction:ltr;text-align:left">manifest: ${!!document.querySelector("link[rel=manifest]")} · https: ${location.protocol=="https:"} · service worker: ${"serviceWorker" in navigator} · persistent storage: ${PST}</div></div>`}
+function quickSett(){const T4=[["e","هزینه"],["i","درآمد"],["l","دادم"],["b","گرفتم"]],ao=a=>S.accounts.map(x=>`<option${x.n==a?" selected":""}>${x.n}</option>`).join("");
+ return `<div class="card"><b>میان‌بُرهای ثبت سریع</b><div class="sub" style="margin:4px 0">هر میان‌بُر یک دکمه در صفحهٔ «ثبت» می‌سازد. «ثبت فوری» یعنی با یک لمس همان لحظه ثبت شود (مبلغ و دسته لازم است).</div>${S.quick.map((q,i)=>`<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px"><div class="row"><input style="flex:0 0 58px;text-align:center" value="${esc(q.ic||"")}" placeholder="🙂" onchange="qk(${i},'ic',this.value)"><input value="${esc(q.n)}" placeholder="نام دکمه" onchange="qk(${i},'n',this.value)"><select onchange="qk(${i},'t',this.value)">${T4.map(([k,v])=>`<option value="${k}"${q.t==k?" selected":""}>${v}</option>`).join("")}</select></div><div class="row" style="margin-top:6px"><input inputmode="numeric" value="${q.a?fa(q.a):""}" placeholder="مبلغ (اختیاری)" onchange="qk(${i},'a',this.value)">${q.t=="l"||q.t=="b"?`<input value="${esc(q.p)}" placeholder="نام شخص" onchange="qk(${i},'p',this.value)">`:`<select onchange="qk(${i},'c',this.value)"><option value=""></option>${(S.cats[q.t]||[]).map(x=>`<option${x==q.c?" selected":""}>${x}</option>`).join("")}</select>`}</div><div class="row" style="margin-top:6px"><select onchange="qk(${i},'acc',this.value)">${ao(q.acc)}</select><input value="${esc(q.note)}" placeholder="توضیح" onchange="qk(${i},'note',this.value)"></div><div class="row" style="margin-top:6px"><select onchange="qk(${i},'col',this.value)"><option value="">رنگ پیش‌فرض</option>${[["#0f8b8d","سبزآبی"],["#2563eb","آبی"],["#7c3aed","بنفش"],["#db2777","صورتی"],["#ea580c","نارنجی"],["#16a34a","سبز"],["#d24545","قرمز"]].map(([v,n])=>`<option value="${v}"${q.col==v?" selected":""}>${n}</option>`).join("")}</select><button class="chip" style="flex:0 0 44px" onclick="qMv(${i},-1)">↑</button><button class="chip" style="flex:0 0 44px" onclick="qMv(${i},1)">↓</button></div><div class="row" style="margin-top:6px;align-items:center"><label style="display:flex;gap:6px;margin:0;align-items:center"><input type="checkbox" style="width:auto"${q.now?" checked":""} onchange="qk(${i},'now',this.checked)"> ثبت فوری</label><button class="chip" style="flex:0 0 44px" onclick="qDel(${i})">✕</button></div></div>`).join("")}<button class="btn s" onclick="qAdd()">＋ میان‌بُر جدید</button><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" style="width:auto"${S.autoSug!==false?" checked":""} onchange="S.autoSug=this.checked;persist();drawForm()"> نمایش خودکار پرکاربردها</label><label>تعداد پرکاربردهای خودکار</label><select onchange="S.autoN=+this.value;persist();drawForm()">${[0,3,6,8,10].map(n=>`<option${(S.autoN==null?6:S.autoN)==n?" selected":""}>${n}</option>`).join("")}</select><div class="sub" style="margin-top:8px">نکته: در صفحهٔ «ثبت» روی هر میان‌بُر نگه دارید تا به همین‌جا بیایید.</div></div>`}
+window.qk=(i,k,v)=>{S.quick[i][k]=k=="a"?(+norm(v)||0):k=="now"?!!v:String(v).trim();if(k=="t"){S.quick[i].c="";S.quick[i].p=""}persist();drawForm();if(k!="now")sett()};
+window.qMv=(i,d)=>{const j=i+d;if(j<0||j>=S.quick.length)return;[S.quick[i],S.quick[j]]=[S.quick[j],S.quick[i]];persist();drawForm();sett()};
+window.qAdd=()=>{S.quick.push({id:Date.now(),n:"میان‌بُر جدید",t:"e",a:0,c:"",p:"",acc:S.accounts[0].n,note:"",g:"",now:false});persist();sett()};
+window.qDel=i=>{S.quick.splice(i,1);persist();drawForm();sett()};
+function personalSett(){const sw=["#0f8b8d","#2563eb","#7c3aed","#db2777","#ea580c","#16a34a"],cur=S.accent||sw[0];
+ return `<div class="card"><b>ظاهر و چیدمان</b><label>رنگ اصلی</label><div class="chips">${sw.map(c=>`<button class="chip" style="background:${c};border:${c==cur?"3px solid var(--tx)":"1px solid var(--line)"};width:38px;height:38px;padding:0" onclick="setAcc('${c}')"></button>`).join("")}</div><label>صفحهٔ شروع</label><select onchange="S.start=this.value;persist()">${[["add","ثبت"],["dash","داشبورد"],["list","تراکنش‌ها"],["deb","طلب‌ها"]].map(([k,v])=>`<option value="${k}"${(S.start||"add")==k?" selected":""}>${v}</option>`).join("")}</select><label>بخش‌های داشبورد (تیک بردارید تا پنهان شود)</label>${[["ins","خلاصهٔ هوشمند"],["kpi","درآمد و هزینهٔ ماه"],["day","هزینه روزبه‌روز"],["week","هفته‌ها"],["acc","موجودی حساب‌ها"],["cat","هزینه به تفکیک دسته"],["fix","هزینه‌های ثابت"],["debt","طلب و بدهی"],["hab","عادت‌های خرج‌کردن"],["six","۶ ماه اخیر"]].map(([k,v])=>`<label style="display:flex;gap:8px;align-items:center;margin:4px 0;color:var(--tx);font-size:14px"><input type="checkbox" style="width:auto"${S.sec&&S.sec[k]===0?"":" checked"} onchange="(S.sec=S.sec||{})['${k}']=this.checked?1:0;persist()"> ${v}</label>`).join("")}</div>`}
+window.setAcc=c=>{S.accent=c;persist();applyAcc();sett()};
+function applyAcc(){const c=S.accent||"#0f8b8d";document.documentElement.style.setProperty("--pri",c);const m=document.querySelector("meta[name=theme-color]");if(m)m.content=c}
+function sett(){
+ $("#v-set").innerHTML=`${installCard()}<div class="card"><b>سقف هزینهٔ ماهانه (اختیاری)</b><input id="lim" inputmode="numeric" value="${S.limit?fa(S.limit):""}" placeholder="خالی = جمع بودجه‌های دسته‌ها" style="margin-top:8px"><div class="sub" style="margin-top:6px">برای محاسبهٔ «مبلغ مجاز خرج امروز» در داشبورد.</div></div>
+ <div class="card"><b>نرخ پیش‌فرض دلار (تومان)</b><input id="rate" inputmode="numeric" value="${fa(S.rate)}" style="margin-top:8px"><div class="sub" style="margin-top:6px">این عدد فقط پیش‌فرض است. در صفحهٔ ثبت، برای هر تراکنش می‌توانید نرخ را عوض کنید و همان نرخ با تراکنش ذخیره می‌شود.</div></div>
+ <div class="card"><b>حساب‌ها و موجودی اولیه</b>${S.accounts.map((a,i)=>`<div class="row" style="margin-top:8px"><input value="${a.n}" onchange="acc(${i},'n',this.value)"><input inputmode="numeric" value="${fa(a.open)}" onchange="acc(${i},'open',this.value)"><button class="chip" style="flex:0 0 44px" onclick="accDel(${i})">✕</button></div>`).join("")}<button class="btn s" onclick="addAcc()">＋ حساب جدید</button></div>
+ <div class="card"><b>بودجهٔ ماهانهٔ هر دسته (تومان)</b>${S.cats.e.map(c=>`<div class="row" style="margin-top:8px"><div style="align-self:center">${c}</div><input inputmode="numeric" value="${S.budgets[c]?fa(S.budgets[c]):""}" placeholder="بدون بودجه" onchange="bud('${c}',this.value)"></div>`).join("")}</div>
+ ${quickSett()}${personalSett()}${fixedSett()}<div class="card"><b>نوع هزینه (ضروری، احساسی و …)</b><div class="sub" style="margin:4px 0">چهار نوع اصلی پیش‌فرض‌اند؛ هر چه خواستید اضافه یا حذف کنید (با ویرگول جدا کنید).</div><input id="tg" value="${S.tags.join("،")}"><button class="btn s" onclick="saveTags()">ذخیرهٔ انواع</button></div>
+ <div class="card"><b>دسته‌بندی‌ها</b><label>هزینه (با ویرگول جدا کنید)</label><input id="ce" value="${S.cats.e.join("،")}"><label>درآمد</label><input id="ci" value="${S.cats.i.join("،")}"><button class="btn s" onclick="saveCats()">ذخیرهٔ دسته‌ها</button></div>
+ <div class="card"><b>پشتیبان‌گیری و انتقال بین دستگاه‌ها</b><div class="sub" style="margin:4px 0 8px">فایل پشتیبان را روی یک دستگاه بگیرید و روی دستگاه دیگر «بازیابی» کنید. فایل Excel برای بازیابی قابل استفاده نیست.</div><div class="sub" style="margin-bottom:8px">${S.lastBackup?"آخرین پشتیبان: "+fa((Date.now()-S.lastBackup)/864e5)+" روز پیش":"هنوز پشتیبان نگرفته‌اید"}</div><button class="btn s" style="margin-top:0" onclick="bk()">ذخیرهٔ پشتیبان</button><label class="btn s" style="display:block;text-align:center;margin-top:8px">بازیابی از فایل پشتیبان<input type="file" accept=".json,application/json" hidden onchange="rs(this)"></label></div>
+ <button class="btn s" onclick="exp()">دانلود Excel</button>`;
+ $("#lim").onchange=e=>{S.limit=+norm(e.target.value)||0;persist();toast("ذخیره شد")};
+ $("#rate").onchange=e=>{const n=+norm(e.target.value);if(n>0){S.rate=n;persist();rateInfo();$("#rt").value=fa(n);showUsd();toast("نرخ ذخیره شد")}sett()};
+}
+window.acc=(i,k,v)=>{if(k=="open")S.accounts[i].open=+norm(v)||0;else if(v.trim()){const o=S.accounts[i].n;S.accounts[i].n=v.trim();S.tx.forEach(x=>{if(x.acc==o)x.acc=v.trim();if(x.to==o)x.to=v.trim()})}persist();sett()};
+window.accDel=i=>{if(S.accounts.length<2)return toast("حداقل یک حساب لازم است");const a=S.accounts[i],u=S.tx.filter(x=>x.acc==a.n||x.to==a.n).length;
+ if(!confirm(u?`حساب «${a.n}» ${fa(u)} تراکنش دارد. با حذف حساب، موجودی آن دیگر محاسبه نمی‌شود ولی تراکنش‌ها در فهرست می‌مانند. حذف شود؟`:`حساب «${a.n}» حذف شود؟`))return;
+ S.accounts.splice(i,1);persist();sett();drawForm()};
+window.addAcc=()=>{S.accounts.push({n:"حساب "+fa(S.accounts.length+1),open:0});persist();sett()};
+window.bud=(c,v)=>{S.budgets[c]=+norm(v)||0;persist()};
+window.saveCats=()=>{const p=s=>s.split(/[،,]/).map(x=>x.trim()).filter(Boolean);const e=p($("#ce").value),i=p($("#ci").value);if(e.length&&i.length){S.cats={e,i};persist();toast("ذخیره شد");drawForm()}};
+// ---- backup / restore
+window.bk=()=>saveFile("finance-backup.json",JSON.stringify(S),"application/json");
+window.rs=inp=>{const f=inp.files[0];if(!f)return;f.text().then(t=>{try{const v=JSON.parse(t);if(!Array.isArray(v.tx))throw 0;
+ if(confirm("همهٔ اطلاعات فعلی با این پشتیبان جایگزین شود؟")){S=Object.assign(def(),v);persist();sett();drawForm();toast("بازیابی شد ✓")}}catch(e){toast("فایل پشتیبان معتبر نیست")}});inp.value=""};
+function saveFile(name,data,mime){const u=URL.createObjectURL(new Blob([data],{type:mime}));const l=document.createElement("a");l.href=u;l.download=name;document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+const _bk=window.bk;window.bk=()=>{S.lastBackup=Date.now();persist();_bk()};
+// ---- Excel export
+window.exp=async()=>{
+ if(typeof XLSX=="undefined")return toast("کتابخانهٔ Excel بارگذاری نشد");
+ const nm={e:"هزینه",i:"درآمد",t:"انتقال",l:"دادم (طلب)",b:"گرفتم (بدهی/دریافت)"};
+ const rows=[...S.tx].sort((a,b)=>a.d.localeCompare(b.d)).map(x=>({"تاریخ شمسی":(p=>p.year+"/"+String(p.month).padStart(2,"0")+"/"+String(p.day).padStart(2,"0"))(pp(x.d)),"تاریخ میلادی":x.d,"نوع":nm[x.t],"مبلغ (تومان)":x.a,"نرخ دلار":x.r,"مبلغ (دلار)":+(x.a/x.r).toFixed(2),"دسته":x.c,"شخص":x.p||"","حساب":x.acc,"به حساب":x.to,"نوع هزینه":x.g,"توضیح":x.n,"احساس":x.f||""}));
+ const ks=[...new Set(S.tx.map(x=>key(x.d)))].sort();
+ const sm=ks.map(k=>{const l=inM(k),I=sum(l,"i"),E=sum(l,"e");return{"ماه":Math.floor(k/100)+"/"+String(k%100).padStart(2,"0")+" "+MN[k%100-1],"درآمد":I,"هزینه":E,"خالص":I-E,"نرخ پس‌انداز":I?+((I-E)/I).toFixed(3):0}});
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"تراکنش‌ها");
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sm),"خلاصه ماهانه");
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(bal().map(x=>({"حساب":x.n,"موجودی":x.b}))),"حساب‌ها");
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(persons().map(p=>({"شخص":p.n,"مانده":p.net,"وضعیت":p.net>0?"طلب من":p.net<0?"بدهی من":"تسویه"}))),"طلب‌ها");
+ wb.Workbook={Views:[{RTL:true}]};
+ const buf=XLSX.write(wb,{bookType:"xlsx",type:"array"});
+ saveFile("finance.xlsx",buf,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+};
+// ---- nav
+function draw(){["add","dash","list","deb","fc","set"].forEach(v=>$("#v-"+v).classList.toggle("hid",v!=view));
+ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.v==view));
+ if(view=="dash")dash();if(view=="list")list();if(view=="deb")debts();if(view=="fc")fcView();if(view=="set")sett();if(view=="add")drawForm()}
+$("#nav").onclick=e=>{const b=e.target.closest("button");if(b){view=b.dataset.v;draw();scrollTo(0,0)}};
+(async()=>{$("#date").value=iso(new Date());ym=key($("#date").value);$("#today").textContent="امروز: "+pstr($("#date").value);drawForm();await load();ym=key($("#date").value);rateInfo();applyAcc();view=S.start||"add";drawForm();draw();0})();
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script>
+</body>
+</html>
